@@ -1,7 +1,10 @@
 <?php
+require_once __DIR__ . '/inc/bootstrap.php';
 require_once __DIR__ . '/inc/head.php';
 require_once __DIR__ . '/inc/nav.php';
+
 ?>
+<?php echo display_connected(); ?>
 <div class="container">
     <div class="well">
         <h2>Book Voting System</h2>

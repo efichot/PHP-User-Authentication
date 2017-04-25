@@ -6,4 +6,8 @@
 	//Where find the .env file
 	$doenv = new Dotenv\Dotenv(__DIR__);
 	$doenv->load();
+
+	//start session
+	$session = new \Symfony\Component\HttpFoundation\Session\Session();
+	$session->start();
 ?>

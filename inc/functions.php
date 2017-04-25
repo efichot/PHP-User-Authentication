@@ -108,3 +108,73 @@ function createUser($email, $password) {
 		throw $e;
 	}
 }
+
+//function to redirect with a cookie inside the header.
+function redirect($path, $extra = []) {
+	$response = \Symfony\Component\HttpFoundation\Response::create(null, \Symfony\Component\HttpFoundation\Response::HTTP_FOUND, ['Location' => $path]);
+	if (key_exists('cookies', $extra)) {
+		foreach ($extra['cookies'] as $cookie) {
+			$response->headers->setCookie($cookie);
+		}
+	}
+	$response->send();
+	exit;
+}
+
+function isAuthenticated() {
+	if (!request()->cookies->has('access_token')) {
+		return false;
+	}
+	//decode jwt for validate
+	try {
+		\Firebase\JWT\JWT::$leeway = 1;
+		\Firebase\JWT\JWT::decode(
+			request()->cookies->get('access_token'),
+			getenv(SECRET_KEY),
+			['HS256']
+		);
+		return true;
+	} catch (Exception $e) {
+		return false;
+	}
+}
+
+function requireAuth() {
+	if (!isAuthenticated()) {
+		$accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", 'Expired', time() - 3600, '/', getenv('COOKIE_DOMAIN'));
+		setcookie('access_token', 'Expired', time() - 3600, '/');
+		header('Location: ../login.php');
+	}
+}
+
+function display_errors() {
+	global $session;
+
+	if (!$session->getFlashBag()->has('error')) {
+		return ;
+	}
+
+	$messages = $session->getFlashBag()->get('error');
+	$response = '<div class="alert alert-danger alert-dismissable">';
+	foreach ($messages as $message) {
+		$response .= $message . '<br />';
+	}
+	$response .= '</div>';
+	return $response;
+}
+
+function display_connected() {
+	global $session;
+
+	if (!$session->getFlashBag()->has('connected')) {
+		return ;
+	}
+
+	$messages = $session->getFlashBag()->get('connected');
+	$response = '<div style="text-align: center" class="alert alert-success alert-dismissable">';
+	foreach ($messages as $message) {
+		$response .= $message . '<br />';
+	}
+	$response .= '</div>';
+	return $response;
+}
